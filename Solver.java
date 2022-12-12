@@ -102,9 +102,19 @@ public class Solver{
 
             wordleInfoLists.add(wordleInfo);
 
-            for (String each : wordleInfoLists.get(0)){
+            for (int i = 0; i < words.size(); i++){
+                for (ArrayList<String> list : wordleInfoLists){
+                    if (!list.contains(words.get(i))){
+                        words.remove(i);
+                        i--;
+                    }
+                }
+            }
+
+            for (String each : words){
                 System.out.println(each + " " + ScrabbleScore(each));
             }
+            System.out.println(words.size() + " possible words");
         }
     }
 
@@ -132,6 +142,7 @@ public class Solver{
                     // therefore, we want to eliminate both words with no letters in the right spot
                     // and words with more than one letter in the right spot
                     case '1':
+                        // System.out.println("case g1");
                         doubleGuess = guess + guess;
                         doubleWord = word + word;
                         checks = new boolean[5];
@@ -252,10 +263,11 @@ public class Solver{
             
             case 'y':
                 // if the score is y1, it tells us a few things
-                // 2: 4 letters are not in the word
-                // 3: the 1 letter that is is not in the right place
+                // 1: 4 letters are not in the word
+                // 2: the 1 letter that is is not in the right place
                 switch (score.charAt(1)){
                     case '1':
+                        // System.out.println("case y1");
                         doubleGuess = guess + guess;
                         doubleWord = word + word;
                         checks = new boolean[5];
@@ -272,6 +284,9 @@ public class Solver{
                         for (int i = 1; i < checks.length; i++){
                             check = check || checks[i];
                         }
+
+                        // System.out.println((check ? "accepted " : "rejected ") + word);
+                        // System.out.println(checks[0] + " " + checks[1] + " " + checks[2] + " " + checks[3] + " " + checks[4]);
                         return check;
 
                     case '2':
