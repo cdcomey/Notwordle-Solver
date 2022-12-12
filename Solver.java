@@ -43,30 +43,85 @@ public class Solver{
 		Scanner kb = new Scanner(System.in);
 		
         while (true){
-            System.out.print("Enter your guess: ");
-            String guess = kb.next();
+
+            // the loops are for input protection
+            // they will loop until the user puts in a valid string
+            boolean acceptedInput = false;
+            String guess = "";
+            while (!acceptedInput){
+                System.out.print("Enter your guess: ");
+                guess = kb.next();
+                if (words.contains(guess) || guess.equals("exit")){
+                    acceptedInput = true;
+                } else {
+                    System.out.println("That is not a valid guess, try again.");
+                }
+            }
 
             if (guess.equals("exit"))
                 break;
             
-            System.out.print("Is your word's Scrabble score too high, too low, or equal? (enter h/l/e): ");
-            final char scrabble_comp = kb.next().charAt(0);
+            // takes in the guess's scrabble score comparison
+            acceptedInput = false;
+            char scrabble_comp = ' ';
+            while (!acceptedInput){
+                System.out.print("Is your word's Scrabble score too high, too low, or equal? (enter h/l/e): ");
+                scrabble_comp = kb.next().charAt(0);
+                if (scrabble_comp == 'h' || scrabble_comp == 'l' || scrabble_comp == 'e'){
+                    acceptedInput = true;
+                } else {
+                    System.out.println("That is not a valid entry, try again.");
+                }
+            }
 
-            System.out.print("Should you go towards A or Z? ");
-            final char dictionary_comp = kb.next().charAt(0);
+            final char scrabbleComp = scrabble_comp;
 
-            System.out.print("What is your word's simplified Wordle score? Enter the first letter of the color followed by the number (eg g2 or y1), or 'x' if none match): ");
-            final String wordle_comp = kb.next();
+            // takes in the guess's dictionary comparison
+            acceptedInput = false;
+            char dictionary_comp = ' ';
+            while (!acceptedInput){
+                System.out.print("Should you go towards A or Z? ");
+                dictionary_comp = kb.next().charAt(0);
+                if (dictionary_comp == 'a' || dictionary_comp == 'z'){
+                    acceptedInput = true;
+                } else {
+                    System.out.println("That is not a valid entry, try again.");
+                }
+            }
 
+            final char dictionaryComp = dictionary_comp;
+
+            // System.out.print("Is your word too common or too obscure? (enter c/o): ");
+            // final char freq_comp = kb.next().charAt(0);
+
+            // takes in the guess's wordle score
+            acceptedInput = false;
+            String wordle_comp = "";
+            while (!acceptedInput){
+                System.out.print("What is your word's simplified Wordle score?\nEnter the first letter of the color followed by the number (eg g2 or y1),\nor 'x' if none match): ");
+                wordle_comp = kb.next();
+                if (wordle_comp == "x"){
+                    acceptedInput = true;
+                } else if (wordle_comp.length() == 2 && (wordle_comp.charAt(0) == 'g' || wordle_comp.charAt(0) == 'y')
+                    && (wordle_comp.charAt(1) == '1' || wordle_comp.charAt(1) == '2' || wordle_comp.charAt(1) == '3'
+                    || wordle_comp.charAt(1) == '4')){
+                        acceptedInput = true;
+                    } else {
+                        System.out.println("That is not a valid entry, try again.");
+                    }
+            }
+
+            // now words will be eliminated from the pool of potential words
+            
             // dictionary check
-            if (dictionary_comp == 'a'){
+            if (dictionaryComp == 'a'){
                 words = new ArrayList<String>(words.subList(0, words.indexOf(guess)));
-            } else if (dictionary_comp == 'z'){
+            } else if (dictionaryComp == 'z'){
                 words = new ArrayList<String>(words.subList(words.indexOf(guess)+1, words.size()));
             }
 
             // scrabble check
-            if (scrabble_comp == 'h'){ 
+            if (scrabbleComp == 'h'){ 
                 for (int i = 0; i < words.size(); i++){
                     String word = words.get(i);
                     if (ScrabbleScore(word) >= ScrabbleScore(guess)){
@@ -74,7 +129,7 @@ public class Solver{
                         i--;
                     }
                 }
-            } else if (scrabble_comp == 'l'){
+            } else if (scrabbleComp == 'l'){
                 for (int i = 0; i < words.size(); i++){
                     String word = words.get(i);
                     if (ScrabbleScore(word) <= ScrabbleScore(guess)){
@@ -82,7 +137,7 @@ public class Solver{
                         i--;
                     }
                 }
-            } else if (scrabble_comp == 'e'){
+            } else if (scrabbleComp == 'e'){
                 for (int i = 0; i < words.size(); i++){
                     String word = words.get(i);
                     if (ScrabbleScore(word) != ScrabbleScore(guess)){
