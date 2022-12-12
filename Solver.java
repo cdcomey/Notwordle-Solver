@@ -6,6 +6,7 @@ import java.io.IOException;
 
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.HashMap;
 
 import javax.management.loading.MLetContent;
 
@@ -18,7 +19,7 @@ public class Solver{
     public static void main(String[] args){
         // 'shorter list.txt' is the list of all possible correct answers for Wordle
 		// it is the 'shorter' of the two text files since Wordle accepts certain words that it will never set as the correct word
-		File file = new File("shorter list.txt");
+		File wordFile = new File("shorter list.txt");
         
 		ArrayList<String> words = new ArrayList<String>();
 
@@ -28,11 +29,25 @@ public class Solver{
         ArrayList<ArrayList<String>> wordleInfoLists = new ArrayList<ArrayList<String>>();
 
 		// read the contents from the file and store them in an array list
-		try (FileInputStream fis = new FileInputStream(file); BufferedInputStream bis = new BufferedInputStream(fis)){
+		try (FileInputStream fis = new FileInputStream(wordFile); BufferedInputStream bis = new BufferedInputStream(fis)){
 			String s = new String(bis.readAllBytes());
 			String[] arr = s.split("\n");
 			for (String each : arr)
 				words.add(each);
+		} catch (FileNotFoundException ex){
+			System.err.println("file not found");
+		} catch (IOException ex){
+			System.err.println("IO exception");
+		}
+
+        File freqFile = new File("word frequencies.txt");
+        HashMap<String, Double> wordFrequencies = new HashMap<String, Double>();
+        try (FileInputStream fis = new FileInputStream(freqFile); BufferedInputStream bis = new BufferedInputStream(fis)){
+			String s = new String(bis.readAllBytes());
+			String[] arr = s.split("\n");
+			for (String each : arr){
+                wordFrequencies.put(each.substring(0, each.indexOf(" ")), Double.valueOf(each.substring(each.indexOf(" ")+1)));
+            }
 		} catch (FileNotFoundException ex){
 			System.err.println("file not found");
 		} catch (IOException ex){
@@ -91,8 +106,19 @@ public class Solver{
 
             final char dictionaryComp = dictionary_comp;
 
-            // System.out.print("Is your word too common or too obscure? (enter c/o): ");
-            // final char freq_comp = kb.next().charAt(0);
+            acceptedInput = false;
+            char freq_comp = ' ';
+            while (!acceptedInput){
+                System.out.print("Is your word too common or too obscure? (enter c/o): ");
+                freq_comp = kb.next().charAt(0);
+                if (freq_comp == 'c' || freq_comp == 'o'){
+                    acceptedInput = true;
+                } else {
+                    System.out.println("That is not a valid entry, try again.");
+                }
+            }
+
+            final char freqComp = freq_comp;
 
             // takes in the guess's wordle score
             acceptedInput = false;
@@ -112,7 +138,7 @@ public class Solver{
             }
 
             // now words will be eliminated from the pool of potential words
-            
+
             // dictionary check
             if (dictionaryComp == 'a'){
                 words = new ArrayList<String>(words.subList(0, words.indexOf(guess)));
@@ -141,6 +167,33 @@ public class Solver{
                 for (int i = 0; i < words.size(); i++){
                     String word = words.get(i);
                     if (ScrabbleScore(word) != ScrabbleScore(guess)){
+                        words.remove(i);
+                        i--;
+                    }
+                }
+            }
+
+            // frequency check
+            if (freqComp == 'c'){
+                double guessFreq = wordFrequencies.get(guess);
+                for (int i = 0; i < words.size(); i++){
+                    String word = words.get(i);
+
+                    // if the word is more common than the guess, and the guess is already too common, the word must be too common as well
+                    if (wordFrequencies.get(word) >= guessFreq){
+                        System.out.println("eliminating " + word + " for being too common");
+                        words.remove(i);
+                        i--;
+                    }
+                }
+            } else if (freqComp == 'o'){
+                double guessFreq = wordFrequencies.get(guess);
+                for (int i = 0; i < words.size(); i++){
+                    String word = words.get(i);
+
+                    // if the word is more obscure than the guess, and the guess is already too obscure, the word must be too obscure as well
+                    if (wordFrequencies.get(word) <= guessFreq){
+                        System.out.println("eliminating " + word + " for being too obscure");
                         words.remove(i);
                         i--;
                     }
