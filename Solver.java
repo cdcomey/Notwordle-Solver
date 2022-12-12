@@ -181,7 +181,7 @@ public class Solver{
 
                     // if the word is more common than the guess, and the guess is already too common, the word must be too common as well
                     if (wordFrequencies.get(word) >= guessFreq){
-                        System.out.println("eliminating " + word + " for being too common");
+                        // System.out.println("eliminating " + word + " for being too common");
                         words.remove(i);
                         i--;
                     }
@@ -193,7 +193,7 @@ public class Solver{
 
                     // if the word is more obscure than the guess, and the guess is already too obscure, the word must be too obscure as well
                     if (wordFrequencies.get(word) <= guessFreq){
-                        System.out.println("eliminating " + word + " for being too obscure");
+                        // System.out.println("eliminating " + word + " for being too obscure");
                         words.remove(i);
                         i--;
                     }
