@@ -7,9 +7,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.HashMap;
-
-import javax.management.loading.MLetContent;
-
 import java.util.Random;
 
 public class Solver{
@@ -126,7 +123,7 @@ public class Solver{
             while (!acceptedInput){
                 System.out.print("What is your word's simplified Wordle score?\nEnter the first letter of the color followed by the number (eg g2 or y1),\nor 'x' if none match): ");
                 wordle_comp = kb.next();
-                if (wordle_comp == "x"){
+                if (wordle_comp.charAt(0) == 'x'){
                     acceptedInput = true;
                 } else if (wordle_comp.length() == 2 && (wordle_comp.charAt(0) == 'g' || wordle_comp.charAt(0) == 'y')
                     && (wordle_comp.charAt(1) == '1' || wordle_comp.charAt(1) == '2' || wordle_comp.charAt(1) == '3'
@@ -140,6 +137,8 @@ public class Solver{
             // now words will be eliminated from the pool of potential words
 
             // dictionary check
+            // since the list of words is sorted alphabetically, elimination is easy
+            // simply return a sublist with the word after the guess as the start, or the word before the guess as the end
             if (dictionaryComp == 'a'){
                 words = new ArrayList<String>(words.subList(0, words.indexOf(guess)));
             } else if (dictionaryComp == 'z'){
@@ -147,6 +146,8 @@ public class Solver{
             }
 
             // scrabble check
+            // calculate each word's scrabble score, compare it to the guess's, and remove if it does not match scrabbleComp
+            // scores are calculated on the fly instead of being stored in a lookup table due to their short calculation time
             if (scrabbleComp == 'h'){ 
                 for (int i = 0; i < words.size(); i++){
                     String word = words.get(i);
@@ -174,6 +175,7 @@ public class Solver{
             }
 
             // frequency check
+            // similar implementation to scrabble check
             if (freqComp == 'c'){
                 double guessFreq = wordFrequencies.get(guess);
                 for (int i = 0; i < words.size(); i++){
