@@ -1,9 +1,15 @@
 public class Word{
-    private String name;
-    private int scrabbleScore;
-    private double frequency;
+    private final String name;
+    private final int scrabbleScore;
+    private final double frequency;
     private static final int[] SCRABBLE_SCORES = {1, 3, 3, 2, 1, 4, 2, 4, 1, 8, 5, 1, 3, 1, 1, 3, 10, 1, 1, 1, 1, 4, 4, 8, 4, 10};
 
+    public Word(){
+        name = "null";
+        frequency = 0.0;
+        scrabbleScore = 0;
+
+    }
     public Word(String name, double frequency){
         this.name = name;
         this.frequency = frequency;
@@ -23,4 +29,29 @@ public class Word{
 
         return l1+l2+l3+l4+l5;
     }
+
+    @Override
+    public boolean equals(Object o){
+        if (o == this){
+            return true;
+        }
+
+        if (!(o instanceof Word)){
+            return false;
+        }
+
+        Word w = (Word)o;
+
+        return name.equals(w.get());
+    }
+
+    public boolean equals(String s){
+        return name.equals(s);
+    }
+
+    @Override
+    public String toString(){
+        return name + " " + scrabbleScore + " " + frequency;
+    }
+
 }

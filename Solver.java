@@ -18,35 +18,36 @@ public class Solver{
 		// it is the 'shorter' of the two text files since Wordle accepts certain words that it will never set as the correct word
 		File wordFile = new File("shorter list.txt");
         
-		ArrayList<String> words = new ArrayList<String>();
+		String wordsString = "";
 
         // wordleInfoLists contains a list of lists
         // each list corresponds to a guess, so a new list will be added for each guess
         // each list contains all the possible words the answer could be based on that guess's wordle score
-        ArrayList<ArrayList<String>> wordleInfoLists = new ArrayList<ArrayList<String>>();
+        ArrayList<ArrayList<Word>> wordleInfoLists = new ArrayList<ArrayList<Word>>();
 
 		// read the contents from the file and store them in an array list
 		try (FileInputStream fis = new FileInputStream(wordFile); BufferedInputStream bis = new BufferedInputStream(fis)){
-			String s = new String(bis.readAllBytes());
-			String[] arr = s.split("\n");
-			for (String each : arr)
-				words.add(each);
+			wordsString = new String(bis.readAllBytes());
 		} catch (FileNotFoundException ex){
-			System.err.println("file not found");
+			System.err.println(wordFile + " not found");
 		} catch (IOException ex){
-			System.err.println("IO exception");
+			System.err.println("IO exception when attempting to read " + wordFile);
 		}
 
         File freqFile = new File("word frequencies.txt");
-        HashMap<String, Double> wordFrequencies = new HashMap<String, Double>();
+        ArrayList<Word> words = new ArrayList<Word>();
         try (FileInputStream fis = new FileInputStream(freqFile); BufferedInputStream bis = new BufferedInputStream(fis)){
 			String s = new String(bis.readAllBytes());
 			String[] arr = s.split("\n");
 			for (String each : arr){
-                wordFrequencies.put(each.substring(0, each.indexOf(" ")), Double.valueOf(each.substring(each.indexOf(" ")+1)));
+                String name = each.substring(0, each.indexOf(" "));
+                double frequency = Double.valueOf(each.substring(each.indexOf(" ")+1));
+                if (wordsString.contains(name)){
+                    words.add(new Word(name, frequency));
+                }
             }
 		} catch (FileNotFoundException ex){
-			System.err.println("file not found");
+			System.err.println(freqFile + " not found");
 		} catch (IOException ex){
 			System.err.println("IO exception");
 		}
@@ -60,12 +61,22 @@ public class Solver{
             // they will loop until the user puts in a valid string
             boolean acceptedInput = false;
             String guess = "";
+            Word guessWord = new Word();
             while (!acceptedInput){
                 System.out.print("Enter your guess: ");
                 guess = kb.next();
-                if (words.contains(guess) || guess.equals("exit")){
-                    acceptedInput = true;
-                } else {
+                if (guess.equals("exit")){
+                    break;
+                } 
+                
+                for (Word word : words){
+                    if (word.equals(guess)){
+                        acceptedInput = true;
+                        guessWord = new Word(guess, word.getFreq());
+                    }
+                }
+                
+                if (!acceptedInput) {
                     System.out.println("That is not a valid guess, try again.");
                 }
             }
@@ -140,9 +151,9 @@ public class Solver{
             // since the list of words is sorted alphabetically, elimination is easy
             // simply return a sublist with the word after the guess as the start, or the word before the guess as the end
             if (dictionaryComp == 'a'){
-                words = new ArrayList<String>(words.subList(0, words.indexOf(guess)));
+                words = new ArrayList<Word>(words.subList(0, words.indexOf(guessWord)));
             } else if (dictionaryComp == 'z'){
-                words = new ArrayList<String>(words.subList(words.indexOf(guess)+1, words.size()));
+                words = new ArrayList<Word>(words.subList(words.indexOf(guessWord)+1, words.size()));
             }
 
             // scrabble check
@@ -150,24 +161,24 @@ public class Solver{
             // scores are calculated on the fly instead of being stored in a lookup table due to their short calculation time
             if (scrabbleComp == 'h'){ 
                 for (int i = 0; i < words.size(); i++){
-                    String word = words.get(i);
-                    if (ScrabbleScore(word) >= ScrabbleScore(guess)){
+                    Word word = words.get(i);
+                    if (word.getScrabbleScore() >= guessWord.getScrabbleScore()){
                         words.remove(i);
                         i--;
                     }
                 }
             } else if (scrabbleComp == 'l'){
                 for (int i = 0; i < words.size(); i++){
-                    String word = words.get(i);
-                    if (ScrabbleScore(word) <= ScrabbleScore(guess)){
+                    Word word = words.get(i);
+                    if (word.getScrabbleScore() <= guessWord.getScrabbleScore()){
                         words.remove(i);
                         i--;
                     }
                 }
             } else if (scrabbleComp == 'e'){
                 for (int i = 0; i < words.size(); i++){
-                    String word = words.get(i);
-                    if (ScrabbleScore(word) != ScrabbleScore(guess)){
+                    Word word = words.get(i);
+                    if (word.getScrabbleScore() != guessWord.getScrabbleScore()){
                         words.remove(i);
                         i--;
                     }
@@ -177,24 +188,24 @@ public class Solver{
             // frequency check
             // similar implementation to scrabble check
             if (freqComp == 'c'){
-                double guessFreq = wordFrequencies.get(guess);
+                double guessFreq = guessWord.getFreq();
                 for (int i = 0; i < words.size(); i++){
-                    String word = words.get(i);
+                    Word word = words.get(i);
 
                     // if the word is more common than the guess, and the guess is already too common, the word must be too common as well
-                    if (wordFrequencies.get(word) >= guessFreq){
+                    if (word.getFreq() >= guessFreq){
                         // System.out.println("eliminating " + word + " for being too common");
                         words.remove(i);
                         i--;
                     }
                 }
             } else if (freqComp == 'o'){
-                double guessFreq = wordFrequencies.get(guess);
+                double guessFreq = guessWord.getFreq();
                 for (int i = 0; i < words.size(); i++){
-                    String word = words.get(i);
+                    Word word = words.get(i);
 
                     // if the word is more obscure than the guess, and the guess is already too obscure, the word must be too obscure as well
-                    if (wordFrequencies.get(word) <= guessFreq){
+                    if (word.getFreq() <= guessFreq){
                         // System.out.println("eliminating " + word + " for being too obscure");
                         words.remove(i);
                         i--;
@@ -203,9 +214,9 @@ public class Solver{
             }
 
             // wordle check
-            ArrayList<String> wordleInfo = new ArrayList<String>();
-            for (String word : words){
-                if (wordleEliminator(guess, word, wordle_comp)){
+            ArrayList<Word> wordleInfo = new ArrayList<Word>();
+            for (Word word : words){
+                if (wordleEliminator(guessWord, word, wordle_comp)){
                     wordleInfo.add(word);
                 }
             }
@@ -213,7 +224,7 @@ public class Solver{
             wordleInfoLists.add(wordleInfo);
 
             for (int i = 0; i < words.size(); i++){
-                for (ArrayList<String> list : wordleInfoLists){
+                for (ArrayList<Word> list : wordleInfoLists){
                     if (!list.contains(words.get(i))){
                         words.remove(i);
                         i--;
@@ -221,26 +232,18 @@ public class Solver{
                 }
             }
 
-            for (String each : words){
-                System.out.println(each + " " + ScrabbleScore(each));
+            for (Word each : words){
+                System.out.println(each);
             }
             System.out.println(words.size() + " possible words");
         }
     }
 
-    static int ScrabbleScore(String s){
-        int l1 = SCRABBLE_SCORES[(int)(s.charAt(0)) - 97];
-        int l2 = SCRABBLE_SCORES[(int)(s.charAt(1)) - 97];
-        int l3 = SCRABBLE_SCORES[(int)(s.charAt(2)) - 97];
-        int l4 = SCRABBLE_SCORES[(int)(s.charAt(3)) - 97];
-        int l5 = SCRABBLE_SCORES[(int)(s.charAt(4)) - 97];
-
-        return l1+l2+l3+l4+l5;
-    }
-
     // evaluates whether the guess is possible given its wordle score
-    static boolean wordleEliminator(String guess, String word, String score){
+    static boolean wordleEliminator(Word guessIn, Word wordIn, String score){
         // System.out.println("checking " + word);
+        String guess = guessIn.get();
+        String word = wordIn.get();
         switch (score.charAt(0)){
             case 'g':
                 boolean[] checks;
