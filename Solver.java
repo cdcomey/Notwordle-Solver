@@ -6,14 +6,14 @@ import java.io.IOException;
 
 import java.util.ArrayList;
 import java.util.Scanner;
-import java.util.HashMap;
-import java.util.Random;
 
 public class Solver{
     static final char[] LETTERS = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
     static final int[] SCRABBLE_SCORES = {1, 3, 3, 2, 1, 4, 2, 4, 1, 8, 5, 1, 3, 1, 1, 3, 10, 1, 1, 1, 1, 4, 4, 8, 4, 10};
     
     public static void main(String[] args){
+
+        WordRecommender df = new WordRecommender();
         // 'shorter list.txt' is the list of all possible correct answers for Wordle
 		// it is the 'shorter' of the two text files since Wordle accepts certain words that it will never set as the correct word
 		File wordFile = new File("shorter list.txt");
@@ -56,6 +56,7 @@ public class Solver{
 		Scanner kb = new Scanner(System.in);
 		
         while (true){
+            System.out.println(WordRecommender.recommendWord(words.toArray(new Word[0])));
 
             // the loops are for input protection
             // they will loop until the user puts in a valid string
@@ -157,8 +158,7 @@ public class Solver{
             }
 
             // scrabble check
-            // calculate each word's scrabble score, compare it to the guess's, and remove if it does not match scrabbleComp
-            // scores are calculated on the fly instead of being stored in a lookup table due to their short calculation time
+            // compare each word's Scrabble score to the guess's, and remove if it does not match scrabbleComp
             if (scrabbleComp == 'h'){ 
                 for (int i = 0; i < words.size(); i++){
                     Word word = words.get(i);
@@ -235,8 +235,11 @@ public class Solver{
             for (Word each : words){
                 System.out.println(each);
             }
+
             System.out.println(words.size() + " possible words");
         }
+
+        kb.close();
     }
 
     // evaluates whether the guess is possible given its wordle score

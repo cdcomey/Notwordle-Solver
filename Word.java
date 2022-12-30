@@ -13,14 +13,14 @@ public class Word{
     public Word(String name, double frequency){
         this.name = name;
         this.frequency = frequency;
-        scrabbleScore = ScrabbleScore(name);
+        scrabbleScore = scrabbleScore(name);
     }
 
     public String get(){ return name; }
     public double getFreq(){ return frequency; }
     public int getScrabbleScore(){ return scrabbleScore; }
 
-    private int ScrabbleScore(String s){
+    private int scrabbleScore(String s){
         int l1 = SCRABBLE_SCORES[(int)(s.charAt(0)) - 97];
         int l2 = SCRABBLE_SCORES[(int)(s.charAt(1)) - 97];
         int l3 = SCRABBLE_SCORES[(int)(s.charAt(2)) - 97];
