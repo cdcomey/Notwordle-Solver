@@ -137,7 +137,6 @@ public class WordRecommender{
         for (int i = 0; i < freqSortedWords.length; i++){
             int deviation = Math.abs(freqSortedWords.length/2 - i);
             wordScores.replace(freqSortedWords[i], wordScores.get(freqSortedWords[i]) + deviation);
-            // print(freqSortedWords[i].get() + " " + (wordScores.get(freqSortedWords[i])-deviation) + " + " + deviation + " = " + wordScores.get(freqSortedWords[i]));
         }
 
         print("best word is " + getKeysByValue(wordScores, Collections.min(wordScores.values())) + " with a score of " + Collections.min(wordScores.values()));
